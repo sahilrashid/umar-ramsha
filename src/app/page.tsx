@@ -1,47 +1,46 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { Button } from "@/components/ui/button"
-import { MapPin, Search, User } from "lucide-react"
-import Image from "next/image"
-import { useState } from "react"
+import { Button } from "@/components/ui/button";
+import { MapPin, Search, User } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 
 export default function WeddingSeatingChart() {
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResult, setSearchResult] = useState<{
-    name: string
-    tableNumber: number
-  } | null>(null)
-  const [hasSearched, setHasSearched] = useState(false)
-  const [isSearching, setIsSearching] = useState(false)
+    name: string;
+    tableNumber: number;
+  } | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
-  // Mock data - replace with actual guest data
+  // TODO: replace with your JSON-backed data when ready
   const guestData = {
     "sahil rashid": { name: "Sahil Rashid", tableNumber: 23 },
     "john smith": { name: "John Smith", tableNumber: 15 },
     "sarah johnson": { name: "Sarah Johnson", tableNumber: 8 },
-  }
+  };
 
   const handleSearch = async () => {
-    setIsSearching(true)
-    setHasSearched(false)
+    setIsSearching(true);
+    setHasSearched(false);
 
-    // Simulate search delay for animation
-    await new Promise((resolve) => setTimeout(resolve, 800))
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
-    const query = searchQuery.toLowerCase().trim()
-    const result = guestData[query as keyof typeof guestData]
-    setSearchResult(result || null)
-    setHasSearched(true)
-    setIsSearching(false)
-  }
+    const query = searchQuery.toLowerCase().trim();
+    const result = guestData[query as keyof typeof guestData];
+    setSearchResult(result || null);
+    setHasSearched(true);
+    setIsSearching(false);
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      handleSearch()
+      handleSearch();
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -52,13 +51,15 @@ export default function WeddingSeatingChart() {
             <div className="mb-4">
               <p className="text-2xl md:text-3xl text-amber-800 mb-2 tracking-wider">WELCOME TO</p>
             </div>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl text-amber-900 mb-4 leading-tight tracking-wide">UMAR &</h1>
+            <h1 className="text-4xl md:text-6xl lg:text-7xl text-amber-900 mb-4 leading-tight tracking-wide">UMAR &amp;</h1>
             <h1 className="text-4xl md:text-6xl lg:text-7xl text-amber-900 mb-6 leading-tight tracking-wide">
-              RAMSHA'S
+              RAMSHA&apos;S
             </h1>
             <p className="text-xl md:text-2xl text-amber-800 mb-8 tracking-widest font-light">WEDDING RECEPTION</p>
             <div className="max-w-md mx-auto">
-              <p className="text-sm text-amber-700 italic mb-2">"And we created you in pairs"</p>
+              <p className="text-sm text-amber-700 italic mb-2">
+                &ldquo;And we created you in pairs&rdquo;
+              </p>
               <p className="text-xs text-amber-700">Quran 78:8</p>
             </div>
           </div>
@@ -212,7 +213,7 @@ export default function WeddingSeatingChart() {
       <footer className="py-8 border-t border-gray-200">
         <div className="container mx-auto px-6">
           <div className="text-center">
-            <p className="text-sm text-gray-400 mb-2">Designed & developed by Sahil Rashid at</p>
+            <p className="text-sm text-gray-400 mb-2">Designed &amp; developed by Sahil Rashid at</p>
             <div className="flex items-center justify-center">
               <Image
                 src="/images/ctrl-studio-logo.png"
@@ -226,5 +227,5 @@ export default function WeddingSeatingChart() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
