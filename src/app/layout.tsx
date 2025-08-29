@@ -8,7 +8,7 @@ import { Playfair_Display } from "next/font/google";
 const playfair = Playfair_Display({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Shaadi Seating Chart - Wedding Celebration",
+  title: "Umar & Ramsha Shaadi Seating Arrangement",
   description: "Find your seat for our beautiful Shaadi celebration",
 };
 
