@@ -5,41 +5,126 @@ import type React from "react";
 import { Button } from "@/components/ui/button";
 import { MapPin, Search, User } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+type Guest = { name: string; tableNumber: number };
+
+// normalize for comparison
+function norm(s: string) {
+  return s
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Remove trailing "Family", "’s Family", "'s Family"
+function stripFamily(name: string) {
+  return name
+    .replace(/\s*(?:’s|'s)?\s*family\.?$/i, "") // possessive family
+    .replace(/\s+family\.?$/i, "") // plain family
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Split couples "A & B" or "A and B" into individual names
+function splitCouple(name: string) {
+  const parts = name.split(/\s*(?:&|and)\s*/i).map((p) => p.trim()).filter(Boolean);
+  return parts.length >= 2 ? parts : [name];
+}
 
 export default function WeddingSeatingChart() {
+  const [allGuests, setAllGuests] = useState<Guest[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResult, setSearchResult] = useState<{
-    name: string;
-    tableNumber: number;
-  } | null>(null);
+  const [searchResult, setSearchResult] = useState<Guest | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
-  // TODO: replace with your JSON-backed data when ready
-  const guestData = {
-    "sahil rashid": { name: "Sahil Rashid", tableNumber: 23 },
-    "john smith": { name: "John Smith", tableNumber: 15 },
-    "sarah johnson": { name: "Sarah Johnson", tableNumber: 8 },
-  };
+  // Load your JSON from /public
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/guests-seating.json", { cache: "force-cache" });
+        const raw: Guest[] = await res.json();
+
+        // Normalize the dataset:
+        // - strip "Family"
+        // - split couples into separate rows (same table)
+        // - de-dupe (name + table)
+        const expanded: Guest[] = [];
+        for (const g of raw) {
+          const base = stripFamily(g.name);
+          for (const person of splitCouple(base)) {
+            expanded.push({ name: person, tableNumber: g.tableNumber });
+          }
+        }
+        const seen = new Set<string>();
+        const unique = expanded.filter((g) => {
+          const k = `${norm(g.name)}#${g.tableNumber}`;
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return true;
+        });
+
+        if (!cancelled) setAllGuests(unique);
+      } catch {
+        if (!cancelled) setAllGuests([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Build alias index for fast lookup (may have multiple entries per alias)
+  const aliasIndex = useMemo(() => {
+    const map = new Map<string, Guest[]>();
+    for (const g of allGuests) {
+      const key = norm(g.name);
+      const arr = map.get(key) ?? [];
+      arr.push(g);
+      map.set(key, arr);
+    }
+    return map;
+  }, [allGuests]);
 
   const handleSearch = async () => {
     setIsSearching(true);
     setHasSearched(false);
 
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    // small UX delay
+    await new Promise((r) => setTimeout(r, 250));
 
-    const query = searchQuery.toLowerCase().trim();
-    const result = guestData[query as keyof typeof guestData];
-    setSearchResult(result || null);
+    const q = norm(searchQuery);
+    let result: Guest | null = null;
+
+    // 1) exact matches (could be multiple; pick lowest table)
+    const exact = aliasIndex.get(q) ?? [];
+    if (exact.length) {
+      result = [...exact].sort((a, b) => a.tableNumber - b.tableNumber)[0];
+    }
+
+    // 2) partial fallback over aliases
+    if (!result && q.length >= 2) {
+      const candidates: Guest[] = [];
+      for (const [alias, recs] of aliasIndex.entries()) {
+        if (alias.includes(q)) candidates.push(...recs);
+      }
+      if (candidates.length) {
+        candidates.sort((a, b) => a.tableNumber - b.tableNumber);
+        result = candidates[0];
+      }
+    }
+
+    setSearchResult(result);
     setHasSearched(true);
     setIsSearching(false);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleSearch();
   };
 
   return (
@@ -134,7 +219,7 @@ export default function WeddingSeatingChart() {
                   placeholder="Enter your full name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyDown}
                   disabled={isSearching}
                   className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-300 rounded-2xl focus:border-amber-600 focus:outline-none bg-white text-amber-900 placeholder-gray-500 disabled:opacity-50"
                 />
