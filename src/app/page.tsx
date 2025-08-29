@@ -82,7 +82,7 @@ export default function WeddingSeatingChart() {
               {/* Second Image - Overlapping */}
               <div className="relative w-4/5 h-64 rounded-3xl overflow-hidden shadow-lg bg-gray-100 group -mt-20 ml-auto mr-4">
                 <Image
-                  src="/images/couple-3.jpg"
+                  src="/images/couple-4.jpg"
                   alt="Couple with beautiful floral backdrop"
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
@@ -108,7 +108,7 @@ export default function WeddingSeatingChart() {
                 {/* Second Image */}
                 <div className="relative h-96 lg:h-[500px] rounded-3xl overflow-hidden shadow-lg bg-gray-100 group">
                   <Image
-                    src="/images/couple-3.jpg"
+                    src="/images/couple-4.jpg"
                     alt="Couple with beautiful floral backdrop"
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
